@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model Crypto {
+  id               String         @id @default(uuid())
+  name             String         @unique
+  symbol           String         @unique
+  marketCap        Float
+  currentValue     Float
+  highestValue     Float
+  highestValueDate DateTime
+  lowestValue      Float
+  lowestValueDate  DateTime
+  variation24h     Float
+  variation7d      Float
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  updates          CryptoUpdate[]
+}
+
+model CryptoUpdate {
+  id           String   @id @default(uuid())
+  cryptoId     String
+  marketCap    Float
+  price        Float
+  variation24h Float
+  variation7d  Float
+  timestamp    DateTime @default(now())
+  ath          Float
+  athDate      DateTime
+  atl          Float
+  atlDate      DateTime
+  crypto       Crypto   @relation(fields: [cryptoId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  USER
+}
