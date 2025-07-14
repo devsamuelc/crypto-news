@@ -36,7 +36,7 @@ export class CoinGeckoService {
       return crypto;
     }
 
-    const api = CoinGeckoApi(cryptoApiKey);
+    const api = CoinGeckoApi();
 
     try {
       const response = await api.get(`/coins/markets`, {

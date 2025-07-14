@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { CoinGeckoService } from './coin-gecko-service';
+import { CoinGeckoService } from './coin-gecko.service';
 
 @Controller('coin-gecko')
 export class CoinGeckoController {
