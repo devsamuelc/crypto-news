@@ -15,7 +15,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Crypto API')
-    .setDescription('Auth + Session + User API')
+    .setDescription('Auth + Session + User + Crypto API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
