@@ -44,8 +44,8 @@ export class UserController {
 
   @Get('/')
   @UseGuards(JwtAuthGuard)
-  @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'page', required: true, default: 1 })
+  @ApiQuery({ name: 'limit', required: true, default: 10 })
   @ApiBearerAuth()
   async findAll(
     @Query('page', ParseIntPipe) page = 1,
