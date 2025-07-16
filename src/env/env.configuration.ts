@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 export enum EEnvType {
   PRODUCTION = 'production',
   DEVELOPMENT = 'development',
@@ -12,6 +13,10 @@ export declare namespace IEnvConfiguration {
   interface IProps {
     env: IEnvConfiguration.TEnvType;
     server: {
+      port: number;
+    };
+    redis: {
+      host: string;
       port: number;
     };
     database: {
@@ -39,6 +44,10 @@ export class EnvConfiguration {
       server: {
         port: Number(process.env.PORT),
       },
+      redis: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: Number(process.env.REDIS_PORT) || 6379,
+      },
       authentication: {
         secret: process.env.JWT_SECRET,
         refreshSecret: process.env.JWT_REFRESH_SECRET,
@@ -48,7 +57,7 @@ export class EnvConfiguration {
       },
       database: {
         url: process.env.DATABASE_URL,
-      }
+      },
     };
   }
 
@@ -75,7 +84,11 @@ export class EnvConfiguration {
   public get env(): IEnvConfiguration.IProps['env'] {
     return this.props.env;
   }
-  
+
+  public get redis(): IEnvConfiguration.IProps['redis'] {
+    return this.props.redis;
+  }
+
   public get database(): IEnvConfiguration.IProps['database'] {
     return this.props.database;
   }

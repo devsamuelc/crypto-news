@@ -9,22 +9,32 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { EnvConfiguration } from './env/env.configuration';
 import { SessionModule } from './session/session.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CryptoModule } from './crypto/crypto.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-ioredis';
 
 const env = EnvConfiguration.getInstance();
-
-console.log(env.authentication);
 
 @Module({
   imports: [
     PassportModule,
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: env.redis.host,
+      port: env.redis.port,
+    }),
+    ScheduleModule.forRoot(),
     JwtModule.register({
       secret: env.authentication.secret,
       signOptions: { expiresIn: '6h' },
     }),
-    CoinGeckoModule, 
+    CoinGeckoModule,
     UserModule,
     SessionModule,
-    AuthModule
+    AuthModule,
+    CryptoModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

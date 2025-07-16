@@ -3,7 +3,6 @@ import {
   Get,
   Delete,
   Param,
-  Req,
   UseGuards,
   ParseUUIDPipe,
   HttpCode,
@@ -11,24 +10,33 @@ import {
 } from '@nestjs/common';
 import { SessionService } from './session.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtStrategy } from '@/auth/jwt/jwt.strategy';
+import { JwtAuthGuard } from '@/auth/jwt/jwt.auth.guard';
+import { Authentication } from '@/auth/decorators/auth.decorator';
+import { IAuthentication } from '@/auth/entities/authentication';
 
 @ApiTags('Sessions')
-@UseGuards(JwtStrategy)
+@UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @Controller('sessions')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 
   @Get()
-  async findAll(@Req() req) {
-    return this.sessionService.findAllByUser(req.user.userId);
+  async findAll(@Authentication() authentication: IAuthentication) {
+    const { userId } = authentication;
+
+    return this.sessionService.findAllByUser(userId);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteSession(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
-    const sessions = await this.sessionService.findAllByUser(req.user.userId);
+  async deleteSession(
+    @Authentication() authentication: IAuthentication,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const { userId } = authentication;
+
+    const sessions = await this.sessionService.findAllByUser(userId);
     const ownsSession = sessions.some((s) => s.id === id);
 
     if (!ownsSession) {
@@ -40,7 +48,9 @@ export class SessionController {
 
   @Delete()
   @HttpCode(204)
-  async deleteAll(@Req() req) {
-    await this.sessionService.deleteAllByUser(req.user.userId);
+  async deleteAll(@Authentication() authentication: IAuthentication) {
+    const { userId } = authentication;
+
+    await this.sessionService.deleteAllByUser(userId);
   }
 }

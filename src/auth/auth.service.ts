@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
@@ -37,12 +39,24 @@ export class AuthService {
       expiresIn: '6h',
     });
 
-    const refresh_token = this.jwtService.sign(payload, {
-      secret: env.authentication.refreshSecret,
-      expiresIn: '7d',
-    });
+    const existingSession = await this.sessionService.findValidSession(
+      user.id,
+      userAgent,
+      ip,
+    );
 
-    await this.sessionService.create(user.id, refresh_token, userAgent, ip);
+    let refresh_token: string;
+
+    if (existingSession) {
+      refresh_token = existingSession.refreshToken;
+    } else {
+      refresh_token = this.jwtService.sign(payload, {
+        secret: env.authentication.refreshSecret,
+        expiresIn: '7d',
+      });
+
+      await this.sessionService.create(user.id, refresh_token, userAgent, ip);
+    }
 
     return { access_token, refresh_token };
   }
@@ -65,9 +79,11 @@ export class AuthService {
 
     await this.sessionService.deleteByToken(refreshToken);
 
-    return this.login(
-      { id: payload.sub, email: payload.email, role: payload.role },
-    );
+    return this.login({
+      id: payload.sub,
+      email: payload.email,
+      role: payload.role,
+    });
   }
 
   async logout(refreshToken: string) {

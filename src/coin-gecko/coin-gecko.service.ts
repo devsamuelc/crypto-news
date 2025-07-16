@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable } from '@nestjs/common';
 import 'dotenv/config';
-import { subHours, subMinutes } from 'date-fns';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CoinGeckoApi } from '@/apis/coinGeckoApi';
 
@@ -25,17 +24,6 @@ export class CoinGeckoService {
       throw new Error('Crypto API key is not set');
     }
 
-    const crypto = await this.prisma.crypto.findFirst({
-      where: { name: coinId.toLowerCase() },
-      orderBy: { updatedAt: 'desc' },
-    });
-
-    const threeMinutesAgo = subMinutes(new Date(), 3);
-
-    if (crypto && crypto.updatedAt > threeMinutesAgo) {
-      return crypto;
-    }
-
     const api = CoinGeckoApi();
 
     try {
@@ -43,6 +31,7 @@ export class CoinGeckoService {
         params: {
           ids: coinId,
           vs_currency: currency,
+          price_change_percentage: '24h,7d',
         },
       });
 
@@ -56,7 +45,7 @@ export class CoinGeckoService {
           currentValue: data.current_price,
           marketCap: data.market_cap,
           variation24h: data.price_change_percentage_24h,
-          variation7d: 0,
+          variation7d: data.price_change_percentage_7d_in_currency,
           highestValue: data.ath,
           highestValueDate: new Date(data.ath_date),
           lowestValue: data.atl,
@@ -68,7 +57,7 @@ export class CoinGeckoService {
           currentValue: data.current_price,
           marketCap: data.market_cap,
           variation24h: data.price_change_percentage_24h,
-          variation7d: 0,
+          variation7d: data.price_change_percentage_7d_in_currency,
           highestValue: data.ath,
           highestValueDate: new Date(data.ath_date),
           lowestValue: data.atl,
@@ -90,7 +79,7 @@ export class CoinGeckoService {
         },
       });
 
-      return upsertedCrypto;
+      return data;
     } catch (error) {
       console.error('Error fetching or saving coin data:', error);
 

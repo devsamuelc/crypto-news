@@ -12,16 +12,16 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
-  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Role } from '@prisma/client';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Roles } from '@/auth/roles/roles.decorator';
-import { JwtStrategy } from '@/auth/jwt/jwt.strategy';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@/auth/jwt/jwt.auth.guard';
+import { Authentication } from '@/auth/decorators/auth.decorator';
+import { IAuthentication } from '@/auth/entities/authentication';
 
 @ApiTags('Users')
 @Controller('users')
@@ -33,17 +33,19 @@ export class UserController {
     return this.userService.create(dto);
   }
 
-  @UseGuards(JwtStrategy)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('me')
-  getProfile(@Req() req) {
-    console.log(req.user);
+  getProfile(@Authentication() authentication: IAuthentication) {
+    const { userId } = authentication;
 
-    return req.user;
+    return this.userService.findById(userId);
   }
 
-  @Get()
-  @UseGuards(JwtStrategy)
+  @Get('/')
+  @UseGuards(JwtAuthGuard)
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   @ApiBearerAuth()
   async findAll(
     @Query('page', ParseIntPipe) page = 1,
@@ -52,20 +54,15 @@ export class UserController {
     return this.userService.findAll(page, limit);
   }
 
-  // @Get('email/:email')
-  // async findByEmail(@Param('email') email: string) {
-  //   return this.userService.findByEmail(email);
-  // }
-
   @Get(':id')
-  @UseGuards(JwtStrategy)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     return this.userService.findById(id);
   }
 
   @Put(':id')
-  @UseGuards(JwtStrategy)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -73,24 +70,36 @@ export class UserController {
   ) {
     return this.userService.update(id, dto);
   }
-  
+
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtStrategy)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Roles('ADMIN')
-  async softDelete(@Param('id', ParseUUIDPipe) id: string) {
+  async softDelete(
+    @Authentication() authentication: IAuthentication,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const { role } = authentication;
+
+    if (role !== Role.ADMIN)
+      throw new ForbiddenException('Access denied: insufficient role');
+
     await this.userService.softDelete(id);
   }
 
   @Put(':id/role')
-  @UseGuards(JwtStrategy)
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Roles('ADMIN')
   async updateRole(
+    @Authentication() authentication: IAuthentication,
     @Param('id', ParseUUIDPipe) id: string,
     @Body('role') role: Role,
   ) {
+    const { role: userRole } = authentication;
+
+    if (userRole !== Role.ADMIN)
+      throw new ForbiddenException('Access denied: insufficient role');
+
     return this.userService.setRole(id, role);
   }
 }

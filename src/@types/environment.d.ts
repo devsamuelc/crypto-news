@@ -2,7 +2,6 @@ import { IEnvConfiguration } from '@/env/env-configuration';
 
 declare global {
   namespace NodeJS {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     interface ProcessEnv {
       // Environment
       NODE_ENV: IEnvConfiguration.TEnvType;
@@ -10,6 +9,10 @@ declare global {
 
       // Database
       DATABASE_URL: string;
+
+      // Redis
+      REDIS_HOST: string;
+      REDIS_PORT: string;
 
       // Coin Gecko
       COIN_GECKO_API_KEY: string;

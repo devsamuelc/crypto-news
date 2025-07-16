@@ -15,9 +15,12 @@ export class UserService {
     });
   }
 
-  async findAll(page = 1, limit = 10): Promise<{ data: User[]; total: number }> {
+  async findAll(
+    page = 1,
+    limit = 10,
+  ): Promise<{ data: User[]; total: number }> {
     const skip = (page - 1) * limit;
-  
+
     const [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         where: { deletedAt: null },
@@ -29,9 +32,9 @@ export class UserService {
         where: { deletedAt: null },
       }),
     ]);
-  
+
     return { data, total };
-  }  
+  }
 
   async findById(id: string): Promise<User> {
     const user = await this.prisma.user.findFirst({

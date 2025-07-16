@@ -1,7 +1,6 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { EnvConfiguration } from './env/env.configuration';
-import { RolesGuard } from './auth/roles/roles.guard';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 const env = EnvConfiguration.getInstance();
@@ -9,9 +8,10 @@ const env = EnvConfiguration.getInstance();
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const reflector = app.get(Reflector);
-
-  app.useGlobalGuards(new RolesGuard(reflector));
+  app.enableCors({
+    origin: ['*'],
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Crypto API')
@@ -21,6 +21,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+
   SwaggerModule.setup('api', app, document);
 
   await app.listen(env.server.port ?? 3000);

@@ -13,7 +13,7 @@ export class EnvValidation {
             EnvConfiguration.EnvType.TEST,
             EnvConfiguration.EnvType.LOCAL,
           ]),
-          PORT: z.string().transform(value => Number(value)),
+          PORT: z.string().transform((value) => Number(value)),
 
           // Authentication
           JWT_SECRET: z.string(),

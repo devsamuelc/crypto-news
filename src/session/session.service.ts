@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Session } from '@prisma/client';
 
 @Injectable()
 export class SessionService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(userId: string, refreshToken: string, userAgent?: string, ip?: string) {
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7); // 7 dias
+  async create(
+    userId: string,
+    refreshToken: string,
+    userAgent?: string,
+    ip?: string,
+  ): Promise<Session> {
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
 
     return this.prisma.session.create({
       data: {
@@ -15,6 +21,17 @@ export class SessionService {
         userAgent,
         ip,
         expiresAt,
+      },
+    });
+  }
+
+  async findValidSession(userId: string, userAgent?: string, ip?: string) {
+    return this.prisma.session.findFirst({
+      where: {
+        userId,
+        userAgent,
+        ip,
+        expiresAt: { gt: new Date() },
       },
     });
   }
