@@ -34,10 +34,6 @@ API RESTful desenvolvida com NestJS para cadastro de usuários e fornecimento de
 - Persistência local em banco
 - Endpoints para consulta pública
 
-### Internacionalização (i18n)
-
-- Suporte a múltiplos idiomas nos componentes frontend relacionados (em outros repositórios)
-
 ## 🗂 Estrutura de Pastas (Backend)
 
 ```
