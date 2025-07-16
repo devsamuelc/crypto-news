@@ -1,4 +1,3 @@
-```md
 # 🪙 Crypto News API
 
 API RESTful desenvolvida com NestJS para cadastro de usuários e fornecimento de dados atualizados de criptomoedas. Os dados são sincronizados periodicamente com a CoinGecko, armazenados localmente em banco de dados PostgreSQL e servidos via endpoints públicos.
@@ -20,8 +19,8 @@ API RESTful desenvolvida com NestJS para cadastro de usuários e fornecimento de
 
 - Registro de usuários com e-mail/senha
 - Login com JWT
-- Suporte a múltiplos dispositivos e sessões com refresh tokens (em desenvolvimento)
-- Proteção de rotas com roles (`admin`, `user`, etc)
+- Suporte a múltiplos dispositivos e sessões com refresh tokens
+- Proteção de rotas por roles (`admin`, `user`, etc)
 
 ### Criptomoedas
 
@@ -44,12 +43,16 @@ API RESTful desenvolvida com NestJS para cadastro de usuários e fornecimento de
 ```
 
 src/
+├── @types/           # Tipagem de ambiente
 ├── auth/             # Autenticação (JWT, guards, refresh tokens)
 ├── user/             # Módulo de usuários
+├── env/              # Validação de variáveis de ambiente
+├── coin-gecko/       # Módulo utilitário, utilizado para consultas na API do CoinGecko
 ├── crypto/           # Módulo de criptomoedas
-├── common/           # DTOs, interceptors, decorators, etc.
+├──── schedule/       # Cron job para sincronização com CoinGecko
+├── session/          # Criação e controle de sessões de usuário 
 ├── prisma/           # PrismaService
-├── scheduler/        # Cron job para sincronização com CoinGecko
+├── utils/            # Funções utilitárias
 └── main.ts
 
 ````
@@ -65,7 +68,7 @@ cd crypto-news
 npm install
 
 # Configure o ambiente
-cp .env.example .env
+cp .env.SAMPLE .env
 
 # Gere o client do Prisma
 npx prisma generate
@@ -97,7 +100,7 @@ GET /cryptos/:id/updates         # Histórico da cripto
 
 ```bash
 # Testes unitários e2e nos endpoints principais
-npm run test
+npx jest --config jest.config.ts
 ```
 
 ## 📅 Agendamento via Cron
@@ -107,5 +110,3 @@ A sincronização com a CoinGecko roda periodicamente (por exemplo, a cada hora)
 ## 📄 Licença
 
 MIT
-
-```
